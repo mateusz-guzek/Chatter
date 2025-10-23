@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Chatter.Server.Utility;
+namespace Server.Shared.Utility;
 
 public class Passwords
 {

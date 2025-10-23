@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Server.Models;
+using Server.Shared.Models;
 
-namespace Chatter.Server.Data;
+namespace Server.Data;
 
 public class ChatterDbContext : DbContext
 {

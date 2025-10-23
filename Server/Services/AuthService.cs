@@ -1,11 +1,11 @@
 ﻿using System.Security.Cryptography;
-using Chatter.Server.Data;
 using Chatter.Server.Services.Interfaces;
-using Chatter.Server.Utility;
 using Microsoft.Extensions.Caching.Memory;
-using Server.Models;
+using Server.Data;
+using Server.Shared.Models;
+using Server.Shared.Utility;
 
-namespace Chatter.Server.Services;
+namespace Server.Services;
 
 public class AuthService : IAuthService
 {

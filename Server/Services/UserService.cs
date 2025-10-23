@@ -1,9 +1,9 @@
-﻿using Chatter.Server.Data;
-using Chatter.Server.Services.Interfaces;
+﻿using Chatter.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Server.Models;
+using Server.Data;
+using Server.Shared.Models;
 
-namespace Chatter.Server.Services;
+namespace Server.Services;
 
 public class UserService : IUserService
 {

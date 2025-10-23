@@ -1,8 +1,9 @@
-using Chatter.Server.Data;
 using Chatter.Server.Services;
 using Chatter.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
+using Server.Data;
 using Server.Handlers;
+using Server.Services;
 
 namespace Server;
 

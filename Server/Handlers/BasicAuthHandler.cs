@@ -44,7 +44,7 @@ public class BasicAuthHandler : AuthenticationHandler<AuthenticationSchemeOption
             if (authenticated)
             {
                 var id = await _authService.GetId(username);
-                var claims = new[] { new Claim(ClaimTypes.Name, username), new Claim("id", id) };
+                var claims = new[] { new Claim(ClaimTypes.Name, username), new Claim(ClaimTypes.NameIdentifier, id) };
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);
                 var ticket = new AuthenticationTicket(principal, Scheme.Name);

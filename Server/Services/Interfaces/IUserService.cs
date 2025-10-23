@@ -1,4 +1,4 @@
-﻿using Server.Models;
+﻿using Server.Shared.Models;
 
 namespace Chatter.Server.Services.Interfaces;
 
