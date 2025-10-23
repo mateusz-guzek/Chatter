@@ -1,6 +1,8 @@
 using Chatter.Server.Data;
 using Chatter.Server.Services;
 using Chatter.Server.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
+using Server.Handlers;
 
 namespace Server;
 
@@ -15,6 +17,10 @@ public class Program
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
         
+        builder.Services.AddAuthentication("BasicAuthentication")
+            .AddScheme<AuthenticationSchemeOptions, BasicAuthHandler>("BasicAuthentication", null);
+        builder.Services.AddAuthorization();
+        
         builder.Services.AddControllers();
         
         
@@ -25,6 +31,9 @@ public class Program
             var db = scope.ServiceProvider.GetRequiredService<ChatterDbContext>();
             db.Database.EnsureCreated();
         }
+        
+        app.UseAuthentication();
+        app.UseAuthorization();
         
         app.MapControllers();
         

@@ -1,4 +1,5 @@
 ﻿using Chatter.Server.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chatter.Server.Controllers;
@@ -44,6 +45,7 @@ public class AuthController : ControllerBase
         
     }
     
+    [Authorize]
     [HttpPost("test")]
     public async Task<ActionResult> Test()
     {

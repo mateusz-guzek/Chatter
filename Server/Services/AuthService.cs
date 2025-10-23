@@ -19,15 +19,17 @@ public class AuthService : IAuthService
         _userService = userService;
         _memoryCache = memoryCache;
     }
-    public async Task<string> Authenticate(string username, string password)
+    public async Task<bool> Authenticate(string username, string password)
     {
         var user = await _userService.GetUserByName(username);
-        if (user == null) throw new InvalidOperationException("Invalid username or password");
-        
-        if (!Passwords.VerifyPassword(password, user.Password)) throw new InvalidOperationException("Invalid username or password");
-        var token = GenerateToken();
-        _memoryCache.Set(token, user.Id, TimeSpan.FromHours(6));
-        return token;
+        if (user == null) return false;
+
+        return Passwords.VerifyPassword(password, user.Password);
+
+        // if (!Passwords.VerifyPassword(password, user.Password)) throw new InvalidOperationException("Invalid username or password");
+        // var token = GenerateToken();
+        // _memoryCache.Set(token, user.Id, TimeSpan.FromHours(6));
+        // return token;
     }
     public async Task<bool> Register(string username, string password)
     {
@@ -53,11 +55,23 @@ public class AuthService : IAuthService
         return true;
     }
 
+    public Task<string> GetId(string username, string password)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<bool> Logout(string token)
     {
         if (!_memoryCache.TryGetValue(token, out Guid userId)) return false;
         _memoryCache.Remove(token);
         return true;
+    }
+
+    public async Task<string> GetId(string username)
+    {
+        var user = await _userService.GetUserByName(username);
+        if (user == null) throw new InvalidOperationException("Invalid username or password");
+        return user.Id.ToString();
     }
 
     private string GenerateToken()
