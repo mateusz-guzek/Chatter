@@ -36,12 +36,7 @@ public class AuthService : IAuthService
         var user = await _userService.GetUserByName(username);
         if (user != null) return false;
         var hashedPassword = Passwords.HashPassword(password);
-        var newUser = new User
-        {
-            Name = username,
-            Password = hashedPassword
-        };
-        await _userService.CreateUser(newUser);
+        await _userService.CreateUser(username, hashedPassword);
         return true;
     }
     public async Task<bool> ChangePassword(string username, string oldPassword, string newPassword)

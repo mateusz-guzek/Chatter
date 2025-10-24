@@ -13,14 +13,10 @@ public class UserService : IUserService
         _dbContext = dbContext;
     }
     
-    public async Task AddUser(User user)
-    {
-        _dbContext.Users.Add(user);
-        await _dbContext.SaveChangesAsync();
-    }
 
-    public async Task<User> CreateUser(User user)
+    public async Task<User> CreateUser(string name, string password)
     {
+        var user = new User(name, password);
         _dbContext.Users.Add(user);
         await _dbContext.SaveChangesAsync();
         return user;
@@ -32,6 +28,11 @@ public class UserService : IUserService
     {
         _dbContext.Users.Remove(user);
         return await Task.FromResult(user);
+    }
+
+    public Task<User> CreateUser(User user)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<User> UpdateUser(User user)

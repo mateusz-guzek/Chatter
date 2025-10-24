@@ -1,6 +1,7 @@
 ﻿using Chatter.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Server.Data;
 using Server.Extensions;
 
 namespace Server.Controllers;
@@ -10,7 +11,7 @@ namespace Server.Controllers;
 public class AuthController : ChatterControllerBase
 {
     private readonly IAuthService _authService;
-    public AuthController(IAuthService authService)
+    public AuthController(ChatterDbContext db, IAuthService authService) : base(db)
     {
         _authService = authService;
     }
@@ -50,7 +51,7 @@ public class AuthController : ChatterControllerBase
     [HttpPost("test")]
     public async Task<ActionResult> Test()
     {
-        return Ok(CurrentUser);
+        return Ok(CurrentUser());
     }
     
 }
