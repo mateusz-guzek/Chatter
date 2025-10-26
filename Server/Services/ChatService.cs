@@ -21,8 +21,10 @@ public class ChatService : IChatService
     }
     public async Task<ChatRoom> CreateChatRoom(string name, User owner)
     {
-        
-        throw new NotImplementedException();
+        var chatRoom = new ChatRoom(name, owner);
+        _db.ChatRooms.Add(chatRoom);
+        await _db.SaveChangesAsync();
+        return chatRoom;
     }
     public async Task<ChatRoom> UpdateChatRoom(ChatRoom chatRoom)
     {

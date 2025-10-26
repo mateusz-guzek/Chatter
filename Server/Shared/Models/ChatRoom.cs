@@ -2,6 +2,8 @@
 
 public class ChatRoom
 {
+    
+    public ChatRoom() {}
     public ChatRoom(string name, User owner)
     {
         Name = name;

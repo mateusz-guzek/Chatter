@@ -2,7 +2,7 @@
 
 public class User
 {
-    
+    public User() {}
     public User(string name, string password)
     {
         Name = name;

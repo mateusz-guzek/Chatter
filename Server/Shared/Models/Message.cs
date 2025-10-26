@@ -2,6 +2,9 @@
 
 public class Message
 {
+    
+    public Message() {}
+    
     public Guid Id { get; set; }
     public User Sender { get; set; }
     public string Text { get; set; }
