@@ -28,42 +28,64 @@ public class ChatService : IChatService
     }
     public async Task<ChatRoom> UpdateChatRoom(ChatRoom chatRoom)
     {
-        throw new NotImplementedException();
+        _db.ChatRooms.Update(chatRoom);
+        await _db.SaveChangesAsync();
+        return chatRoom;
     }
     public async Task<ChatRoom> DeleteChatRoom(ChatRoom chatRoom)
     {
-        throw new NotImplementedException();
+        _db.ChatRooms.Remove(chatRoom);
+        await _db.SaveChangesAsync();
+        return chatRoom;
     }
     public async Task<ChatRoom> GetChatRoomById(Guid id)
     {
-        throw new NotImplementedException();
+        return await _db.ChatRooms.FindAsync(id) ?? throw new InvalidOperationException();
     }
     public async Task<IEnumerable<ChatRoom>> SearchChatRooms(string query)
     {
-        throw new NotImplementedException();
+        return await _db.ChatRooms.Where(x => x.Name.Contains(query)).ToListAsync();
     }
     public async Task<IEnumerable<ChatRoom>> GetUsersChatRooms(Guid userId)
     {
-        throw new NotImplementedException();
+        return await _db.Users.Where(x => x.Id == userId).SelectMany(x => x.ChatRooms).ToListAsync();
     }
     public async Task<bool> AddUserToChatRoom(Guid chatRoomId, Guid userId)
     {
-        throw new NotImplementedException();
+        var chatRoom = await GetChatRoomById(chatRoomId);
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null) return false;
+        chatRoom.Users.Add(user);
+        await _db.SaveChangesAsync();
+        return true;
     }
     public async Task<bool> RemoveUserFromChatRoom(Guid chatRoomId, Guid userId)
     {
-        throw new NotImplementedException();
+        var chatRoom = await GetChatRoomById(chatRoomId);
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null) return false;
+        chatRoom.Users.Remove(user);
+        await _db.SaveChangesAsync();
+        return true;
     }
     public async Task<IEnumerable<User>> GetUsersInChatRoom(Guid chatRoomId)
     {
-        throw new NotImplementedException();
+        var chatRoom = await GetChatRoomById(chatRoomId);
+        return chatRoom.Users;
     }
     public async Task<bool> SendMessage(Guid chatRoomId, Guid userId, string message)
     {
-        throw new NotImplementedException();
+        var chatRoom = await GetChatRoomById(chatRoomId);
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null) return false;
+        var chatMessage = new Message(user, message, chatRoom);
+        chatRoom.Messages.Add(chatMessage);
+        await _db.SaveChangesAsync();
+        return true;
     }
     public async Task<IEnumerable<Message>> GetMessagesSince(Guid chatRoomId, DateTime since)
     {
-        throw new NotImplementedException();
+        var chatRoom = await GetChatRoomById(chatRoomId);
+        return chatRoom.Messages.Where(x => x.Date > since);
     }
 }
