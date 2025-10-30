@@ -21,6 +21,7 @@ public class ChatService : IChatService
     }
     public async Task<ChatRoom> CreateChatRoom(string name, User owner)
     {
+        _db.Users.Attach(owner);
         var chatRoom = new ChatRoom(name, owner);
         _db.ChatRooms.Add(chatRoom);
         await _db.SaveChangesAsync();

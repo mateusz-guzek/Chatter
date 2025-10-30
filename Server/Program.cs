@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Server.Data;
 using Server.Handlers;
 using Server.Services;
+using Server.Services.Interfaces;
 
 namespace Server;
 
@@ -17,6 +18,7 @@ public class Program
         builder.Services.AddDbContext<ChatterDbContext>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IChatService, ChatService>();
         
         builder.Services.AddAuthentication("BasicAuthentication")
             .AddScheme<AuthenticationSchemeOptions, BasicAuthHandler>("BasicAuthentication", null);

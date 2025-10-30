@@ -26,14 +26,18 @@ public class BasicAuthHandler : AuthenticationHandler<AuthenticationSchemeOption
     {
         if (!Request.Headers.ContainsKey("Authorization"))
         {
-            return AuthenticateResult.Fail("");
+            Logger.LogWarning("Authorization header is missing");
+            return AuthenticateResult.NoResult();
         }
 
         try
         {
             var authHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
             if(!authHeader.Scheme.Equals("basic", StringComparison.OrdinalIgnoreCase))
-                return AuthenticateResult.Fail("");
+            {
+                Logger.LogWarning("Invalid authentication scheme: {Scheme}", authHeader.Scheme);
+                return AuthenticateResult.NoResult();
+            }
 
             var credentialsBytes =  Convert.FromBase64String(authHeader.Parameter);
             var credentials = Encoding.UTF8.GetString(credentialsBytes).Split(':',2);
@@ -41,25 +45,24 @@ public class BasicAuthHandler : AuthenticationHandler<AuthenticationSchemeOption
             var password = credentials[1];
             
             var authenticated = await _authService.Authenticate(username, password);
-            if (authenticated)
+            if (!authenticated)
             {
-                var id = await _authService.GetId(username);
-                var claims = new[] { new Claim(ClaimTypes.Name, username), new Claim(ClaimTypes.NameIdentifier, id) };
-                var identity = new ClaimsIdentity(claims, Scheme.Name);
-                var principal = new ClaimsPrincipal(identity);
-                var ticket = new AuthenticationTicket(principal, Scheme.Name);
-                return AuthenticateResult.Success(ticket);
-            }
-            else
-            {
+                Logger.LogWarning("Authentication failed for user: {Username}", username);
                 return AuthenticateResult.Fail("");
             }
+            var id = await _authService.GetId(username);
+            var claims = new[] { new Claim(ClaimTypes.Name, username), new Claim(ClaimTypes.NameIdentifier, id) };
+            var identity = new ClaimsIdentity(claims, Scheme.Name);
+            var principal = new ClaimsPrincipal(identity);
+            var ticket = new AuthenticationTicket(principal, Scheme.Name);
+            Logger.LogInformation("User authenticated successfully: {Username}", username);
+            return AuthenticateResult.Success(ticket);
 
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            Logger.LogError(e, "Authentication error occurred");
+            return AuthenticateResult.Fail("");
         }
     }
 }

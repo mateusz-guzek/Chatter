@@ -17,11 +17,18 @@ public class ChatterControllerBase : ControllerBase
     }
     protected async Task<User> CurrentUser()
     {
+        foreach (var userClaim in User.Claims)
+        {
+            Console.WriteLine(userClaim);
+        }
+        
             if (User == null || !User.Identity.IsAuthenticated)
                 return null;
 
             var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _db.Users.FindAsync(Guid.Parse(id));
+            var guid = Guid.Parse(id);
+            Console.WriteLine(guid);
+            var user = await _db.Users.FindAsync(guid);
 
             return user;
     }

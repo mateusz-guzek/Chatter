@@ -16,20 +16,20 @@ public class AuthController : ChatterControllerBase
         _authService = authService;
     }
     
-    [HttpPost("login")]
-    public async Task<ActionResult> Login([FromBody] LoginRequest request)
-    {
-        try
-        {
-            var token = await _authService.Authenticate(request.Username, request.Password);
-            if (token == null) return Unauthorized();
-            return Ok(token);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
-    }
+    // [HttpPost("login")]
+    // public async Task<ActionResult> Login([FromBody] LoginRequest request)
+    // {
+    //     try
+    //     {
+    //         var token = await _authService.Authenticate(request.Username, request.Password);
+    //         if (token == null) return Unauthorized();
+    //         return Ok(token);
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         return BadRequest(e.Message);
+    //     }
+    // }
 
     [HttpPost("register")]
     public async Task<ActionResult> Register([FromBody] RegisterRequest request)
@@ -56,6 +56,5 @@ public class AuthController : ChatterControllerBase
     
 }
 
-public record LoginRequest(string Username, string Password);
 
 public record RegisterRequest(string Username, string Password);
