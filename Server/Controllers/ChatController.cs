@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Server.Data;
 using Server.Extensions;
 using Server.Services.Interfaces;
-using Server.Shared.Models;
+using Server.Shared.Models.Dtos;
 
 namespace Server.Controllers;
 
@@ -13,33 +13,64 @@ namespace Server.Controllers;
 public class ChatController : ChatterControllerBase
 {
     private readonly IChatService _chatService;
+
     public ChatController(ChatterDbContext db, IChatService chatService) : base(db)
     {
         _chatService = chatService;
     }
 
-    
-    [HttpGet("chatrooms")]
-    public async Task<ActionResult<List<ChatRoom>>> GetChatRooms()
+
+    [HttpGet("rooms")]
+    public async Task<ActionResult<List<ChatRoomDto>>> GetChatRooms()
     {
         return await _chatService.GetAllChatRooms();
     }
-    
-    [HttpGet("chatrooms/{id}")]
-    public async Task<ActionResult<ChatRoom>> GetChatRoom(Guid id)
+
+    [HttpGet("rooms/{id}")]
+    public async Task<ActionResult<ChatRoomDto>> GetChatRoom(Guid id)
     {
         return await _chatService.GetChatRoomById(id);
     }
 
-    [HttpPost("chatrooms/create")]
-    public async Task<IActionResult> CreateChatRoom([FromBody] ChatRoomCreateReq req)
+    [HttpPost("rooms/create")]
+    public async Task<IActionResult> CreateChatRoom([FromBody] CreateChatRoomRequest request)
     {
         var user = await CurrentUser();
-        var chatRoom = await _chatService.CreateChatRoom(req.Name, user);
+        Console.WriteLine("User: " + user.Name + "");
+        var chatRoom = await _chatService.CreateChatRoom(request.Name, user.Id);
         return Ok(chatRoom.Id);
     }
-    
-    
+
+
+    [HttpPost("{chatRoomId}/messages")]
+    public async Task<IActionResult> SendMessage(
+        Guid chatRoomId,
+        [FromBody] TextMessageRequest request)
+    {
+        var user = await CurrentUser();
+        var isAllowed = await _chatService.IsUserInChatRoom(chatRoomId, user.Id);
+        if (!isAllowed) return Unauthorized();
+        var res = await _chatService.SendMessage(chatRoomId, user.Id, request.Message);
+        if (!res) return StatusCode(500);
+        return Ok(res);
+    }
+
+    [HttpGet("{chatRoomId}/messages")]
+    public async Task<IActionResult> GetMessages(
+        Guid chatRoomId,
+        [FromQuery] int limit = 50)
+    {
+        var user = await CurrentUser();
+        var isAllowed = await _chatService.IsUserInChatRoom(chatRoomId, user.Id);
+        if (!isAllowed) return Unauthorized();
+        var messages = await _chatService.GetRecentMessages(chatRoomId, limit);
+
+        return Ok(new ReadMessagesResponse(chatRoomId, messages));
+    }
 }
 
-public record ChatRoomCreateReq(string Name);
+public record TextMessageRequest(string Message);
+
+public record CreateChatRoomRequest(string Name);
+
+public record ReadMessagesResponse(Guid ChatRoomId, List<ChatMessageDto> Messages);

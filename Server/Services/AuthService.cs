@@ -1,24 +1,24 @@
 ﻿using System.Security.Cryptography;
-using Chatter.Server.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Server.Data;
-using Server.Shared.Models;
-using Server.Shared.Utility;
+using Server.Services.Interfaces;
+using Server.Shared.Utilities;
 
 namespace Server.Services;
 
 public class AuthService : IAuthService
 {
     private readonly ChatterDbContext _dbContext;
-    private readonly IUserService _userService;
     private readonly IMemoryCache _memoryCache;
-    
+    private readonly IUserService _userService;
+
     public AuthService(ChatterDbContext dbContext, IUserService userService, IMemoryCache memoryCache)
     {
         _dbContext = dbContext;
         _userService = userService;
         _memoryCache = memoryCache;
     }
+
     public async Task<bool> Authenticate(string username, string password)
     {
         var user = await _userService.GetUserByName(username);
@@ -31,6 +31,7 @@ public class AuthService : IAuthService
         // _memoryCache.Set(token, user.Id, TimeSpan.FromHours(6));
         // return token;
     }
+
     public async Task<bool> Register(string username, string password)
     {
         var user = await _userService.GetUserByName(username);
@@ -39,6 +40,7 @@ public class AuthService : IAuthService
         await _userService.CreateUser(username, hashedPassword);
         return true;
     }
+
     public async Task<bool> ChangePassword(string username, string oldPassword, string newPassword)
     {
         var user = await _userService.GetUserByName(username);
@@ -48,6 +50,13 @@ public class AuthService : IAuthService
         user.Password = hashedPassword;
         await _userService.UpdateUser(user);
         return true;
+    }
+
+    public async Task<string> GetId(string username)
+    {
+        var user = await _userService.GetUserByName(username);
+        if (user == null) throw new InvalidOperationException("Invalid username or password");
+        return user.Id.ToString();
     }
 
     public Task<string> GetId(string username, string password)
@@ -60,13 +69,6 @@ public class AuthService : IAuthService
         if (!_memoryCache.TryGetValue(token, out Guid userId)) return false;
         _memoryCache.Remove(token);
         return true;
-    }
-
-    public async Task<string> GetId(string username)
-    {
-        var user = await _userService.GetUserByName(username);
-        if (user == null) throw new InvalidOperationException("Invalid username or password");
-        return user.Id.ToString();
     }
 
     private string GenerateToken()

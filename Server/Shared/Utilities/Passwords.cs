@@ -1,13 +1,12 @@
 ﻿using System.Security.Cryptography;
 
-namespace Server.Shared.Utility;
+namespace Server.Shared.Utilities;
 
 public class Passwords
 {
-    
     private static byte[] GenerateSalt()
     {
-        byte[] salt = new byte[16];
+        var salt = new byte[16];
         RandomNumberGenerator.Fill(salt);
         return salt;
     }
@@ -26,16 +25,15 @@ public class Passwords
         Array.Copy(salt, 0, hashBytes, 0, 16);
         Array.Copy(hash, 0, hashBytes, 16, 32);
         return Convert.ToBase64String(hashBytes);
-        
     }
 
     public static bool VerifyPassword(string password, string hashedPassword)
     {
         var hashBytes = Convert.FromBase64String(hashedPassword);
         var salt = new byte[16];
-        Array.Copy(hashBytes, 0, salt,0, 16);
-        
-        var newPasswordHash =  Convert.FromBase64String(HashPassword(password, salt));
+        Array.Copy(hashBytes, 0, salt, 0, 16);
+
+        var newPasswordHash = Convert.FromBase64String(HashPassword(password, salt));
         return CryptographicOperations.FixedTimeEquals(hashBytes, newPasswordHash);
     }
 }

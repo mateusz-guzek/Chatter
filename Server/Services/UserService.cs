@@ -1,18 +1,20 @@
-﻿using Chatter.Server.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Server.Data;
+using Server.Services.Interfaces;
 using Server.Shared.Models;
+using Server.Shared.Models.Entities;
 
 namespace Server.Services;
 
 public class UserService : IUserService
 {
     private readonly ChatterDbContext _dbContext;
+
     public UserService(ChatterDbContext dbContext)
     {
         _dbContext = dbContext;
     }
-    
+
 
     public async Task<User> CreateUser(string name, string password)
     {
@@ -23,16 +25,10 @@ public class UserService : IUserService
     }
 
 
-
     public async Task<User> DeleteUser(User user)
     {
         _dbContext.Users.Remove(user);
         return await Task.FromResult(user);
-    }
-
-    public Task<User> CreateUser(User user)
-    {
-        throw new NotImplementedException();
     }
 
     public async Task<User> UpdateUser(User user)
@@ -57,5 +53,9 @@ public class UserService : IUserService
     {
         return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Name == name);
     }
-    
+
+    public Task<User> CreateUser(User user)
+    {
+        throw new NotImplementedException();
+    }
 }

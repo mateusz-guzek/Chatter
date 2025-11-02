@@ -1,26 +1,30 @@
-﻿using Server.Shared.Models;
+﻿using Server.Shared.Models.Dtos;
 
 namespace Server.Services.Interfaces;
 
 public interface IChatService
 {
     // chat rooms
-    public Task<List<ChatRoom>> GetAllChatRooms();
-    public Task<ChatRoom> CreateChatRoom(string name, User owner);
-    public Task<ChatRoom> UpdateChatRoom(ChatRoom chatRoom);
-    public Task<ChatRoom> DeleteChatRoom(ChatRoom chatRoom);
-    public Task<ChatRoom> GetChatRoomById(Guid id);
-    public Task<IEnumerable<ChatRoom>> SearchChatRooms(string query);
-    
+    public Task<List<ChatRoomDto>> GetAllChatRooms();
+
+    public Task<List<ChatRoomDto>> GetAllPublicChatRooms();
+    public Task<ChatRoomDto> CreateChatRoom(string name, Guid ownerId);
+    public Task<Guid> RenameChatRoom(Guid chatRoomId, string newName);
+    public Task<Guid> DeleteChatRoom(Guid chatRoomId);
+    public Task<ChatRoomDto> GetChatRoomById(Guid id);
+    public Task<List<ChatRoomDto>> SearchChatRooms(string query);
+
     // users
-    public Task<IEnumerable<ChatRoom>> GetUsersChatRooms(Guid userId);
+    public Task<List<ChatRoomDto>> GetChatRoomsOfUser(Guid userId);
     public Task<bool> AddUserToChatRoom(Guid chatRoomId, Guid userId);
     public Task<bool> RemoveUserFromChatRoom(Guid chatRoomId, Guid userId);
-    public Task<IEnumerable<User>> GetUsersInChatRoom(Guid chatRoomId);
+
+    public Task<List<UserDto>> GetUsersInChatRoom(Guid chatRoomId);
+    
+    public Task<bool> IsUserInChatRoom(Guid chatRoomId, Guid userId);
+
     // messages
     public Task<bool> SendMessage(Guid chatRoomId, Guid userId, string message);
-    public Task<IEnumerable<Message>> GetMessagesSince(Guid chatRoomId, DateTime since);
-    
-    
-    
+    public Task<List<ChatMessageDto>> GetMessagesSince(Guid chatRoomId, DateTime since, int limit = 50);
+    public Task<List<ChatMessageDto>> GetRecentMessages(Guid chatRoomId, int limit = 50);
 }
