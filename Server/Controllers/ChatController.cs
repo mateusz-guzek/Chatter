@@ -58,19 +58,21 @@ public class ChatController : ChatterControllerBase
     [HttpGet("{chatRoomId}/messages")]
     public async Task<IActionResult> GetMessages(
         Guid chatRoomId,
-        [FromQuery] int limit = 50)
+        [FromQuery] int limit = 50,
+        [FromQuery] DateTime? before = null)
     {
         var user = await CurrentUser();
         var isAllowed = await _chatService.IsUserInChatRoom(chatRoomId, user.Id);
         if (!isAllowed) return Unauthorized();
-        var messages = await _chatService.GetRecentMessages(chatRoomId, limit);
 
-        return Ok(new ReadMessagesResponse(chatRoomId, messages));
+        // Normalize and clamp limit for safety
+        limit = Math.Clamp(limit, 1, 200);
+
+        var page = await _chatService.GetMessagesPage(chatRoomId, before, limit);
+        return Ok(new ChatMessagePagedResponseDto(chatRoomId, page.Messages, page.NextCursor, page.HasMore));
     }
 }
 
 public record TextMessageRequest(string Message);
 
 public record CreateChatRoomRequest(string Name);
-
-public record ReadMessagesResponse(Guid ChatRoomId, List<ChatMessageDto> Messages);

@@ -176,4 +176,48 @@ public class ChatService : IChatService
 
         return messages;
     }
+
+    public async Task<MessagesPageDto> GetMessagesPage(Guid chatRoomId, DateTime? before, int limit = 50)
+    {
+        // We fetch one extra to determine if there are more
+        var query = _db.Messages
+            .Where(x => x.ChatRoom.Id == chatRoomId);
+
+        if (before.HasValue)
+        {
+            query = query.Where(x => x.Date < before.Value);
+        }
+
+        var items = await query
+            .OrderByDescending(x => x.Date)
+            .Take(limit + 1)
+            .Select(x => new ChatMessageDto
+            {
+                Id = x.Id,
+                Text = x.Text,
+                Timestamp = x.Date,
+                Sender = new UserDto
+                {
+                    Id = x.Sender.Id,
+                    Name = x.Sender.Name
+                }
+            })
+            .ToListAsync();
+
+        var hasMore = items.Count > limit;
+        if (hasMore)
+        {
+            // remove the extra item
+            items.RemoveAt(items.Count - 1);
+        }
+
+        var nextCursor = items.LastOrDefault()?.Timestamp;
+
+        return new MessagesPageDto
+        {
+            Messages = items,
+            NextCursor = nextCursor,
+            HasMore = hasMore
+        };
+    }
 }

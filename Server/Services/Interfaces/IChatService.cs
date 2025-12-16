@@ -27,4 +27,5 @@ public interface IChatService
     public Task<bool> SendMessage(Guid chatRoomId, Guid userId, string message);
     public Task<List<ChatMessageDto>> GetMessagesSince(Guid chatRoomId, DateTime since, int limit = 50);
     public Task<List<ChatMessageDto>> GetRecentMessages(Guid chatRoomId, int limit = 50);
+    public Task<MessagesPageDto> GetMessagesPage(Guid chatRoomId, DateTime? before, int limit = 50);
 }
