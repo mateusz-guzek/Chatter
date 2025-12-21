@@ -101,6 +101,34 @@ public class ChatService : IChatService
         return true;
     }
 
+    public async Task<AddUserToRoomResult> AddUserToChatRoom(Guid chatRoomId, Guid targetUserId, Guid performedByUserId)
+    {
+        var room = await _db.ChatRooms
+            .Include(r => r.Owner)
+            .Include(r => r.Users)
+            .FirstOrDefaultAsync(x => x.Id == chatRoomId);
+
+        if (room == null) return AddUserToRoomResult.RoomNotFound;
+
+        var targetUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == targetUserId);
+        if (targetUser == null) return AddUserToRoomResult.UserNotFound;
+
+        // Only owner can add others (both private and public, per plan)
+        if (room.Owner == null || room.Owner.Id != performedByUserId)
+        {
+            return AddUserToRoomResult.NotOwner;
+        }
+
+        if (room.Users.Any(u => u.Id == targetUserId))
+        {
+            return AddUserToRoomResult.AlreadyMember;
+        }
+
+        room.Users.Add(targetUser);
+        await _db.SaveChangesAsync();
+        return AddUserToRoomResult.Added;
+    }
+
     public async Task<bool> RemoveUserFromChatRoom(Guid chatRoomId, Guid userId)
     {
         var room = await _db.ChatRooms.FirstOrDefaultAsync(x => x.Id == chatRoomId);
@@ -112,12 +140,16 @@ public class ChatService : IChatService
 
     public async Task<List<UserDto>> GetUsersInChatRoom(Guid chatRoomId)
     {
-        var room = await _db.ChatRooms.FirstOrDefaultAsync(x => x.Id == chatRoomId);
+        var room = await _db.ChatRooms
+            .Include(r => r.Users)
+            .FirstOrDefaultAsync(x => x.Id == chatRoomId);
+        if (room == null) return new List<UserDto>();
         return room.Users.Select(x => new UserDto(x)).ToList();
     }
 
     public async Task<bool> IsUserInChatRoom(Guid chatRoomId, Guid userId)
     {
+        
         return await _db.Users
             .Where(u => u.Id == userId)
             .AnyAsync(u => u.ChatRooms.Any(cr => cr.Id == chatRoomId));
@@ -131,6 +163,40 @@ public class ChatService : IChatService
         room.Messages.Add(messag);
         await _db.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<bool> IsUserOwner(Guid chatRoomId, Guid userId)
+    {
+        var room = await _db.ChatRooms
+            .Include(r => r.Owner)
+            .FirstOrDefaultAsync(r => r.Id == chatRoomId);
+        if (room == null || room.Owner == null) return false;
+        return room.Owner.Id == userId;
+    }
+
+    public async Task<JoinRoomResult> JoinRoom(Guid chatRoomId, Guid userId)
+    {
+        var room = await _db.ChatRooms
+            .Include(r => r.Users)
+            .FirstOrDefaultAsync(x => x.Id == chatRoomId);
+        if (room == null) return JoinRoomResult.RoomNotFound;
+
+        var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        if (user == null) return JoinRoomResult.UserNotFound;
+
+        if (room.isPrivate)
+        {
+            return JoinRoomResult.Forbidden;
+        }
+
+        if (room.Users.Any(u => u.Id == userId))
+        {
+            return JoinRoomResult.AlreadyMember;
+        }
+
+        room.Users.Add(user);
+        await _db.SaveChangesAsync();
+        return JoinRoomResult.Joined;
     }
 
     public async Task<List<ChatMessageDto>> GetMessagesSince(Guid chatRoomId, DateTime since, int limit = 50)

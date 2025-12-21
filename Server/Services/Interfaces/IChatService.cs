@@ -19,6 +19,11 @@ public interface IChatService
     public Task<bool> AddUserToChatRoom(Guid chatRoomId, Guid userId);
     public Task<bool> RemoveUserFromChatRoom(Guid chatRoomId, Guid userId);
 
+    // membership & privacy
+    public Task<bool> IsUserOwner(Guid chatRoomId, Guid userId);
+    public Task<JoinRoomResult> JoinRoom(Guid chatRoomId, Guid userId);
+    public Task<AddUserToRoomResult> AddUserToChatRoom(Guid chatRoomId, Guid targetUserId, Guid performedByUserId);
+
     public Task<List<UserDto>> GetUsersInChatRoom(Guid chatRoomId);
     
     public Task<bool> IsUserInChatRoom(Guid chatRoomId, Guid userId);
@@ -28,4 +33,23 @@ public interface IChatService
     public Task<List<ChatMessageDto>> GetMessagesSince(Guid chatRoomId, DateTime since, int limit = 50);
     public Task<List<ChatMessageDto>> GetRecentMessages(Guid chatRoomId, int limit = 50);
     public Task<MessagesPageDto> GetMessagesPage(Guid chatRoomId, DateTime? before, int limit = 50);
+}
+
+public enum JoinRoomResult
+{
+    Joined,
+    AlreadyMember,
+    Forbidden,
+    RoomNotFound,
+    UserNotFound
+}
+
+public enum AddUserToRoomResult
+{
+    Added,
+    AlreadyMember,
+    Forbidden,
+    NotOwner,
+    RoomNotFound,
+    UserNotFound
 }
